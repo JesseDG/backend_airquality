@@ -46,8 +46,9 @@ def on_message(mqttc, userdata, msg):
             .field("ammonia", payload.get("ammonia")) \
             .field("hydrogen_sulfide", payload.get("hydrogen_sulfide")) \
             .field("humidity", payload.get("humidity")) \
-            .field("voc", payload.get("voc")) \
+            .field("temperature", payload.get("temperature")) \
             .field("dust", payload.get("dust")) \
+            .field("pressure", payload.get("pressure")) \
             .field("timestamp", payload.get("timestamp"))
         
         write_client = client_module.client.write_api(write_options=SYNCHRONOUS)
