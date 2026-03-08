@@ -1,8 +1,8 @@
 from influxdb import client as client_module
 
 RANGES = {
-    "1h": {"start": "-1h", "aggregate": None},
-    "24h": {"start": "-24h", "aggregate": "5m"},
+    "1h": {"start": "-1h", "aggregate": "5m"},
+    "24h": {"start": "-24h", "aggregate": "20m"},
     "1w": {"start": "-7d", "aggregate": "1h"},
     "1m": {"start": "-30d", "aggregate": "6h"},
 }
