@@ -10,7 +10,7 @@ HIVEMQ_PORT = int(os.getenv("HIVEMQ_PORT"))
 HIVEMQ_TOPIC = os.getenv("HIVEMQ_TOPIC")
 HIVEMQ_USER = os.getenv("HIVEMQ_USER")
 HIVEMQ_PASSWORD = os.getenv("HIVEMQ_PASSWORD")
-
+mqttc = None
 #
 #   MQTT connector callback - handles connection to HiveMQ 
 #
@@ -28,6 +28,11 @@ def on_connect(mqttc, userdata, flags, rc):
             print(f"Failed to subscribe to topic {HIVEMQ_TOPIC}.......")
     else:
         print(f"Failed to connect to HiveMQ, return code {rc}")
+
+def on_disconnect(mqttc, userdata, rc):
+    print(f"Disconnected from HiveMQ with return code {rc}")
+    mqttc.reconnect()  # Attempt to reconnect to InfluxDB if disconnected
+
 
 #  MQTT message callback - processes incoming messages and writes to InfluxDB
 #   mqttc: MQTT client instance
@@ -58,11 +63,13 @@ def on_message(mqttc, userdata, msg):
         print(f"Error processing message: {e}")
 
 def start_subscriber():
+    global mqttc 
     mqttc = mqtt.Client()
     # mqttc.tls_set()  # only for production HiveMQ
     mqttc.username_pw_set(HIVEMQ_USER, HIVEMQ_PASSWORD)
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
+    mqttc.on_disconnect = on_disconnect
 
     try:
         mqttc.connect(HIVEMQ_HOST, HIVEMQ_PORT, 60)
