@@ -65,7 +65,7 @@ def on_message(mqttc, userdata, msg):
 def start_subscriber():
     global mqttc 
     mqttc = mqtt.Client()
-    # mqttc.tls_set()  # only for production HiveMQ
+    mqttc.tls_set()  # only for production HiveMQ
     mqttc.username_pw_set(HIVEMQ_USER, HIVEMQ_PASSWORD)
     mqttc.on_connect = on_connect
     mqttc.on_message = on_message
