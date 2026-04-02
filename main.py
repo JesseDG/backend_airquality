@@ -15,6 +15,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+
 @app.get("/")
 async def root():
     return {"status": "running"}
@@ -24,3 +25,5 @@ async def root():
 async def history(range: str, sensor: str, device_id: str):
     # Placeholder for fetching historical data from InfluxDB
     return await get_history(range, sensor, device_id)
+
+#end point for FCM token received from android

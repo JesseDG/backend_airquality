@@ -1,6 +1,6 @@
 import paho.mqtt.client as mqtt
 from influxdb_client import Point
-from . import client as client_module
+from . import influxdb_client as client_module
 from influxdb_client.client.write_api import SYNCHRONOUS
 import os
 import json
