@@ -1,4 +1,4 @@
-from influxdb import client as client_module
+from influxdb import influxdb_client as client_module
 
 RANGES = {
     "1h": {"start": "-1h", "aggregate": "5m"},

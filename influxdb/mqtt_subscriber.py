@@ -1,7 +1,9 @@
 import paho.mqtt.client as mqtt
 from influxdb_client import Point
-from . import client as client_module
+from . import influxdb_client as client_module
 from influxdb_client.client.write_api import SYNCHRONOUS
+from notification.monitoring import monitor_thresholds
+
 import os
 import json
 
@@ -46,13 +48,18 @@ def on_message(mqttc, userdata, msg):
         # Create InfluxDB Point with tags and fields based on the incoming payload
         # Assuming payload contains device_id, ammonia, hydrogen_sulfide, humidity, voc, dust, timestamp
         # air_quality_data would be considered the table in influxdb
+        device_id = payload.get("device_id", "unknown")
+        ammonia = payload.get("ammonia")
+        hydrogen_sulfide = payload.get("hydrogen_sulfide")
+        dust = payload.get("dust")
+        monitor_thresholds(device_id, ammonia, hydrogen_sulfide, dust)  # Call monitoring function with sensor data
         point = Point("air_quality_data") \
-            .tag("device_id", payload.get("device_id", "unknown")) \
-            .field("ammonia", payload.get("ammonia")) \
-            .field("hydrogen_sulfide", payload.get("hydrogen_sulfide")) \
+            .tag("device_id", device_id) \
+            .field("ammonia", ammonia) \
+            .field("hydrogen_sulfide", hydrogen_sulfide) \
             .field("humidity", payload.get("humidity")) \
             .field("temperature", payload.get("temperature")) \
-            .field("dust", payload.get("dust")) \
+            .field("dust", dust) \
             .field("pressure", payload.get("pressure")) \
             .field("timestamp", payload.get("timestamp"))
         

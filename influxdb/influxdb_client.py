@@ -1,7 +1,5 @@
 import os
 from influxdb_client import InfluxDBClient 
-from influxdb_client.client.bucket_api import BucketsApi
-from influxdb_client.client.write_api import SYNCHRONOUS
 
 INFLUXDB_URL = os.getenv("INFLUXDB_URL")
 INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
