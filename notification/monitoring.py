@@ -51,7 +51,7 @@ def monitor_thresholds(device_id: str, nh3: float, h2s: float, dust: float):
         return # Skip sending notification if we're still in cooldown period
     
     _last_notified[device_id] = now # Update the last notified time
-    send_notification(device.fcm_token, "⚠️ Air Quality Alert", ", ".join(messages))
+    send_notification(device.token, "⚠️ Air Quality Alert", ", ".join(messages))
 
 #   Helper function to get device information from cache or Firestore
 def get_device_cached(device_id: str):
