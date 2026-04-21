@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 # Cache stores the full DeviceDocument model, not raw dicts
 _cache: dict = {}
 COOLDOWN = timedelta(seconds=30)
-_last_notified: dict = {} # device_id -> datetime of last notification sent
+_last_notified: dict = {} # (device_id, alarm_key) -> datetime of last notification sent
 
 def preload_cache():
     docs = db.collection("devices").stream()
@@ -24,34 +24,38 @@ def monitor_thresholds(device_id: str, nh3: float, h2s: float, dust: float):
         return
 
     t = device.thresholds
-    messages = []
+    alarms = []
 
     if h2s >= t.alert_h2s:
-        messages.append(f"🔴 H2S critical: {h2s} ppm")
+        alarms.append(("h2s_alert", f"🔴 H2S critical: {h2s} ppm"))
     elif h2s >= t.caution_h2s:
-        messages.append(f"🟡 H2S warning: {h2s} ppm")
+        alarms.append(("h2s_caution", f"🟡 H2S warning: {h2s} ppm"))
 
     if nh3 >= t.alert_nh3:
-        messages.append(f"🔴 NH3 critical: {nh3} ppm")
+        alarms.append(("nh3_alert", f"🔴 NH3 critical: {nh3} ppm"))
     elif nh3 >= t.caution_nh3:
-        messages.append(f"🟡 NH3 warning: {nh3} ppm")
+        alarms.append(("nh3_caution", f"🟡 NH3 warning: {nh3} ppm"))
 
     if dust >= t.alert_dust:
-        messages.append(f"🔴 Dust critical: {dust} µg/m³")
+        alarms.append(("dust_alert", f"🔴 Dust critical: {dust} µg/m³"))
     elif dust >= t.caution_dust:
-        messages.append(f"🟡 Dust warning: {dust} µg/m³")
+        alarms.append(("dust_caution", f"🟡 Dust warning: {dust} µg/m³"))
 
-    if not messages:# Clear cooldown if conditions are back to normal
-        _last_notified.pop(device_id, None)
+    if not alarms:
+        # Clear all cooldowns for this device when conditions return to normal
+        for key in list(_last_notified):
+            if key[0] == device_id:
+                del _last_notified[key]
         return
 
     now = datetime.now()
-    last = _last_notified.get(device_id)
-    if last and (now - last) < COOLDOWN:
-        return # Skip sending notification if we're still in cooldown period
-    
-    _last_notified[device_id] = now # Update the last notified time
-    send_notification(device.token, "⚠️ Air Quality Alert", ", ".join(messages))
+    for alarm_key, message in alarms:
+        cd_key = (device_id, alarm_key)
+        last = _last_notified.get(cd_key)
+        if last and (now - last) < COOLDOWN:
+            continue # This specific alarm is still in cooldown
+        _last_notified[cd_key] = now
+        send_notification(device.token, "⚠️ Air Quality Alert", message)
 
 #   Helper function to get device information from cache or Firestore
 def get_device_cached(device_id: str):
